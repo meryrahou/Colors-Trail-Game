@@ -7,6 +7,9 @@ import java.util.*;
 
 public class MainAgent extends Agent {
 
+
+    private GameGUI gui; // GUI for visualizing the grid and players
+
     public static final int WIDTH = 7;
     public static final int HEIGHT = 5;
     public static final String[] COLORS = {"Red", "Blue", "Green", "Yellow"};
@@ -20,6 +23,8 @@ public class MainAgent extends Agent {
         System.out.println(getLocalName() + ": Initializing the game...");
 
         initGrid();
+        gui = new GameGUI(grid);
+
         assignPlayers();
 
         // Start the main game loop
@@ -60,6 +65,7 @@ public class MainAgent extends Agent {
 
             PlayerData playerData = new PlayerData(name, startX, startY, goalX, goalY, tokens);
             players.put(name, playerData);
+            gui.updatePlayerPosition(playerData.name, playerData.x, playerData.y, playerData.goalX, playerData.goalY);
 
             // Send setup info to agent
             ACLMessage setupMsg = new ACLMessage(ACLMessage.INFORM);
@@ -103,10 +109,17 @@ public class MainAgent extends Agent {
                 pdata.setX(x);
                 pdata.setY(y);
                 pdata.setTokens(new ArrayList<>(updatedTokens));
+                gui.updatePlayerPosition(pdata.name, pdata.x, pdata.y, pdata.goalX, pdata.goalY);
 
                 if (pdata.isAtGoal()) {
                     System.out.println(currentPlayer + " has reached the goal! Game Over.");
                     gameOver = true;
+                }
+
+                try {
+                    Thread.sleep(2000); // 1000 ms = 1 second
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
 
                 // TODO: Add scoring logic, block counter, token trading, etc.

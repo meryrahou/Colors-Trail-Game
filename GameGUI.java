@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GameGUI extends JFrame {
+    
+    private final Map<String, Point> playerGoals = new HashMap<>();
 
     private static final int CELL_SIZE = 60;
     private static final Color[] COLORS = {
@@ -41,19 +43,32 @@ public class GameGUI extends JFrame {
         setVisible(true);
     }
 
+
     public void updatePlayerPosition(String playerName, int x, int y, int goalX, int goalY) {
-        resetOverlay();
+        SwingUtilities.invokeLater(() -> {
+            resetOverlay();
 
-        JLabel label = new JLabel(playerName);
-        label.setFont(new Font("Arial", Font.BOLD, 12));
-        label.setForeground(Color.WHITE);
+            // Track player's goal
+            playerGoals.put(playerName, new Point(goalX, goalY));
 
-        cells[y][x].add(label);
-        cells[y][x].setBackground(Color.BLACK); // Player's current position
+            // Highlight all goal cells (for all players)
+            for (Map.Entry<String, Point> entry : playerGoals.entrySet()) {
+                Point goal = entry.getValue();
+                cells[goal.y][goal.x].setBorder(BorderFactory.createLineBorder(Color.MAGENTA, 3));
+            }
 
-        cells[goalY][goalX].setBorder(BorderFactory.createLineBorder(Color.MAGENTA, 3)); // Goal cell
-        repaint();
+            // Show player position
+            JLabel label = new JLabel(playerName);
+            label.setFont(new Font("Arial", Font.BOLD, 12));
+            label.setForeground(Color.WHITE);
+
+            cells[y][x].add(label);
+            cells[y][x].setBackground(Color.BLACK); // Player's current position
+
+            repaint();
+        });
     }
+
 
     private void resetOverlay() {
         for (JPanel[] row : cells) {
