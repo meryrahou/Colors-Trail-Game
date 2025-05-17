@@ -7,7 +7,7 @@ public class GameGUI extends JFrame {
     
     private final Map<String, Point> playerGoals = new HashMap<>();
 
-    private static final int CELL_SIZE = 60;
+    private static final int CELL_SIZE = 100;
     private static final Color[] COLORS = {
             Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW
     };
@@ -69,6 +69,7 @@ public class GameGUI extends JFrame {
         });
     }
 
+    
 
     private void resetOverlay() {
         for (JPanel[] row : cells) {
