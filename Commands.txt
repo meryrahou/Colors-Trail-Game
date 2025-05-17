@@ -1,0 +1,3 @@
+find . -name "*.class" -type f -delete
+
+javac -cp ".:/Users/mery/Downloads/JADE-all-4.6.0/jade/lib/jade.jar" *.java && java -cp ".:/Users/mery/Downloads/JADE-all-4.6.0/jade/lib/jade.jar" StartJADE
