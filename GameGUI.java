@@ -51,24 +51,38 @@ public class GameGUI extends JFrame {
             // Track player's goal
             playerGoals.put(playerName, new Point(goalX, goalY));
 
-            // Highlight all goal cells (for all players)
+            // Highlight and label all goal cells
             for (Map.Entry<String, Point> entry : playerGoals.entrySet()) {
                 Point goal = entry.getValue();
+
                 cells[goal.y][goal.x].setBorder(BorderFactory.createLineBorder(Color.MAGENTA, 3));
+
+                JLabel goalLabel = new JLabel("Goal " + entry.getKey().substring(entry.getKey().length() - 1));
+                goalLabel.setFont(new Font("Arial", Font.BOLD, 10));
+                goalLabel.setForeground(Color.MAGENTA);
+                goalLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                goalLabel.setVerticalAlignment(SwingConstants.BOTTOM);
+
+                cells[goal.y][goal.x].add(goalLabel);
             }
 
-            // Show player position
-            JLabel label = new JLabel(playerName);
-            label.setFont(new Font("Arial", Font.BOLD, 12));
-            label.setForeground(Color.WHITE);
 
-            cells[y][x].add(label);
-            cells[y][x].setBackground(Color.BLACK); // Player's current position
+            // Draw all players
+            for (Map.Entry<String, Point> playerEntry : playerPositions.entrySet()) {
+                String player = playerEntry.getKey();
+                Point pos = playerEntry.getValue();
+
+                JLabel playerLabel = new JLabel(player);
+                playerLabel.setFont(new Font("Arial", Font.BOLD, 12));
+                playerLabel.setForeground(Color.WHITE);
+
+                cells[pos.y][pos.x].add(playerLabel);
+                cells[pos.y][pos.x].setBackground(Color.BLACK); // Highlight player cell
+            }
 
             repaint();
         });
     }
-
     
 
     private void resetOverlay() {

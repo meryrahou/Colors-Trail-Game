@@ -104,6 +104,7 @@ public class MainAgent extends Agent {
                 int x = Integer.parseInt(data[0]);
                 int y = Integer.parseInt(data[1]);
                 List<String> updatedTokens = Arrays.asList(data[2].split(","));
+                String status = data.length > 3 ? data[3] : "OK";  // default "OK" if missing
 
                 PlayerData pdata = players.get(currentPlayer);
                 pdata.setX(x);
@@ -116,14 +117,19 @@ public class MainAgent extends Agent {
                     gameOver = true;
                 }
 
+                if ("BLOCKED".equals(status)) {
+                    System.out.println(currentPlayer + " is blocked 3 times. Game over for " + currentPlayer);
+                    gameOver = true;
+                }
+
                 try {
-                    Thread.sleep(2000); // 1000 ms = 1 second
+                    Thread.sleep(2000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+            }
 
                 // TODO: Add scoring logic, block counter, token trading, etc.
-            }
         }
 
         @Override
