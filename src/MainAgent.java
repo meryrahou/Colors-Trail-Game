@@ -154,7 +154,8 @@ public class MainAgent extends Agent {
                 gui.updatePlayerPosition(pdata.name, pdata.x, pdata.y, pdata.goalX, pdata.goalY);
 
                 if (pdata.isAtGoal()) {
-                    System.out.println("🏁 " + currentPlayer + ": Reached the goal at (" + x + "," + y + ")! Victory is mine! 🎉");
+                    
+                    System.out.println("🏁 " + currentPlayer + " reached the goal! 🎉");
 
                     JLabel label = new JLabel(currentPlayer + " has reached the goal! 🎯 🎉", SwingConstants.CENTER);
                     label.setFont(new Font("Segoe UI", Font.BOLD, 18));

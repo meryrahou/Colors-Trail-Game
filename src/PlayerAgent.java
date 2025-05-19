@@ -71,7 +71,6 @@
 
                 System.out.println(getLocalName() + " initialized at (" + x + "," + y + "), goal: (" + goalX + "," + goalY + ")");
                 System.out.println(getLocalName() + " has tokens: " + tokens);
-                System.out.println(getLocalName() + " other players: " + otherPlayers);
             }
 
             /**
@@ -79,7 +78,7 @@
              */
             private void handleTurn(ACLMessage msg) {
                 String requiredColor = msg.getContent();
-                System.out.println(getLocalName() + ": My turn. Needs '" + requiredColor + "'.");
+                System.out.println(getLocalName() + " other players: " + otherPlayers);
 
                 int nextX = x;
                 int nextY = y;
