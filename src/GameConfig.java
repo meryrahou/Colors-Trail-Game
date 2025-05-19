@@ -4,7 +4,7 @@ import java.util.Map;
 
 public class GameConfig {
     // Number of players in the game (up to 4)
-    public static final int NUM_PLAYERS = 2; // can change to 4
+    public static final int NUM_PLAYERS = 4; // can change to 4
 
     // Grid size (width and height)
     public static final int GRID_WIDTH = 7;
@@ -31,7 +31,7 @@ public class GameConfig {
     public static final int TOKENS_PER_PLAYER = 5;
     
     // Probability that a player will betray in a token trade (0.0 to 1.0)
-    public static final double BETRAYAL_PROBABILITY = 0.3;
+    public static final double BETRAYAL_PROBABILITY = 0.9;
     
     
     // Maximum allowed blocked turns before disqualification

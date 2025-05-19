@@ -169,6 +169,8 @@ public class MainAgent extends Agent {
                     );
 
                     gameOver = true;
+                    doDelete();
+                    System.exit(0);
                     return;
                 }
 
@@ -189,6 +191,8 @@ public class MainAgent extends Agent {
                     );
 
                     gameOver = true;
+                    doDelete();
+                    System.exit(0);
                     return;
                 }
 

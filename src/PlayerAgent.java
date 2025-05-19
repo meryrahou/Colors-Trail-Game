@@ -102,16 +102,9 @@
                     System.out.println(getLocalName() + " moved to (" + x + "," + y + ") using '" + requiredColor + "'.");
                 } else {
                     blockedTurns++;
-
-                    if (blockedTurns >= MAX_BLOCKED_TURNS) {
-                        System.out.println(getLocalName() + " blocked " + MAX_BLOCKED_TURNS + " times. Ending game.");
-                        sendResult(false);
-                        return;
-                    }
-
+                    
                     // Choose player to propose to (prefer those who betrayed less)
                     String other = selectPlayerToTrade();
-
                     System.out.println(getLocalName() + " blocked (" + blockedTurns + "). Needs '" + requiredColor + "'. Proposing trade to " + other);
 
                     String needed = requiredColor;
@@ -127,7 +120,7 @@
                     if (response != null && response.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
                         System.out.println(getLocalName() + " received accepted proposal from " + other + ".");
 
-                        boolean honest = new Random().nextBoolean();
+                        boolean honest = Math.random() > GameConfig.BETRAYAL_PROBABILITY;
                         if (honest && !offer.equals("NONE")) {
                             tokens.remove(offer);
                             System.out.println(getLocalName() + " sent token: '" + offer + "'");
@@ -143,6 +136,13 @@
                         }
                     } else {
                         System.out.println(getLocalName() + " negotiation rejected or timed out.");
+
+                        if (blockedTurns >= MAX_BLOCKED_TURNS) {
+                            System.out.println(getLocalName() + " blocked " + MAX_BLOCKED_TURNS + " times. Ending game.");
+                            sendResult(false);
+                            return;
+                        }
+
                     }
                 }
 
