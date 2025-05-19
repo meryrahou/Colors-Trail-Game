@@ -36,7 +36,7 @@ public class PlayerAgent extends Agent {
                     handleInit(msg.getContent());
                     break;
                 case "your-turn":
-                    handleTurn();
+                    handleTurn(msg);
                     break;
                 case "negotiation":
                     handleProposal(msg);
@@ -60,12 +60,15 @@ public class PlayerAgent extends Agent {
 
             tokens = new ArrayList<>(Arrays.asList(tokenArray));
 
-            System.out.println(getLocalName() + " initialized at (" + x + "," + y + ") aiming for (" + goalX + "," + goalY + ")");
+            System.out.println(getLocalName() + " initialized at (" + x + "," + y + "), goal: (" + goalX + "," + goalY + ")");
             System.out.println(getLocalName() + " has tokens: " + tokens);
         }
-                
-        private void handleTurn() {
-            System.out.println(getLocalName() + ": My turn.");
+                        
+        private void handleTurn(ACLMessage msg) {
+            // Color required to move, sent by MainAgent
+            String requiredColor = msg.getContent();
+
+            System.out.println(getLocalName() + ": My turn. Needs '" + requiredColor + "'.");
 
             int nextX = x, nextY = y;
 
@@ -74,7 +77,6 @@ public class PlayerAgent extends Agent {
             else if (y < goalY) nextY++;
             else if (y > goalY) nextY--;
 
-            String requiredColor = guessColor(nextX, nextY); // Placeholder
             boolean canMove = tokens.contains(requiredColor);
 
             if (canMove) {
@@ -82,14 +84,19 @@ public class PlayerAgent extends Agent {
                 y = nextY;
                 tokens.remove(requiredColor);
                 blockedTurns = 0;
-                System.out.println(getLocalName() + " moved to (" + x + "," + y + ") using " + requiredColor);
+                System.out.println(getLocalName() + " moved to (" + x + "," + y + ") using '" + requiredColor + "'.");
             } else {
                 blockedTurns++;
-                System.out.println(getLocalName() + " is blocked (missing " + requiredColor + "), " + blockedTurns + " turns in a row");
+
+                List<String> otherPlayers = new ArrayList<>(Arrays.asList("Player1", "Player2", "Player3", "Player4")); // Update if NUM_PLAYERS changes
+                otherPlayers.remove(getLocalName());
+                String other = otherPlayers.get(new Random().nextInt(otherPlayers.size()));
+
+                System.out.println(getLocalName() + " blocked (" + blockedTurns + " turns in a row). Missing '" + requiredColor + "'.");
+                System.out.println(getLocalName() + " proposes trade: Needs '" + requiredColor + "', offers '" + (tokens.isEmpty() ? "NONE" : tokens.get(0)) + "' to " + other + ".");
 
                 if (blockedTurns >= 3) {
-                    System.out.println(getLocalName() + " is blocked 3 times. Game over for me.");
-                    // Send a fail result
+                    System.out.println(getLocalName() + " blocked 3 times. Ending game.");
                     sendResult(false);
                     return;
                 }
@@ -99,7 +106,6 @@ public class PlayerAgent extends Agent {
                 String offer = tokens.isEmpty() ? "NONE" : tokens.get(0); // pick something to offer
 
                 ACLMessage propose = new ACLMessage(ACLMessage.PROPOSE);
-                String other = getLocalName().equals("Player1") ? "Player2" : "Player1";
                 propose.addReceiver(new AID(other, AID.ISLOCALNAME));
                 propose.setConversationId("negotiation");
                 propose.setContent("Need:" + needed + ";Offer:" + offer);
@@ -114,7 +120,7 @@ public class PlayerAgent extends Agent {
                     boolean honest = new Random().nextBoolean();
                     if (honest && !offer.equals("NONE")) {
                         tokens.remove(offer);
-                        System.out.println(getLocalName() + " sent token: " + offer);
+                        System.out.println(getLocalName() + " sent token: '" + offer + "'");
                     } else {
                         System.out.println(getLocalName() + " betrayed and sent nothing!");
                     }
@@ -123,7 +129,7 @@ public class PlayerAgent extends Agent {
                     String tokenGiven = response.getContent();
                     if (!tokenGiven.equals("NONE")) {
                         tokens.add(tokenGiven);
-                        System.out.println(getLocalName() + " received token: " + tokenGiven);
+                        System.out.println(getLocalName() + " received token: '" + tokenGiven + "'");
                     }
                 } else {
                     System.out.println(getLocalName() + " negotiation rejected or timed out.");

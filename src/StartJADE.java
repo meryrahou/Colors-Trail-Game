@@ -13,7 +13,7 @@ public class StartJADE {
 
         // Create main container profile
         Profile p = new ProfileImpl();
-        p.setParameter(Profile.GUI, "false"); // Disable JADE GUI (no RMA window)
+        p.setParameter(Profile.GUI, "false"); // show JADE GUI
 
         // Create main container
         AgentContainer mainContainer = rt.createMainContainer(p);

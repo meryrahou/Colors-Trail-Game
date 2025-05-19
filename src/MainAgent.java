@@ -14,6 +14,9 @@ public class MainAgent extends Agent {
     public static final int HEIGHT = 5;
     public static final String[] COLORS = {"Red", "Blue", "Green", "Yellow"};
 
+    private static final int NUM_PLAYERS = 2;  // change this number as needed
+
+
     private Case[][] grid = new Case[HEIGHT][WIDTH];
     private Map<String, PlayerData> players = new HashMap<>();
     private int turnCount = 0;
@@ -43,19 +46,27 @@ public class MainAgent extends Agent {
 
     private void assignPlayers() {
         Random rand = new Random();
+        Set<String> usedPositions = new HashSet<>();
 
-        // Define two players
-        for (int i = 1; i <= 2; i++) {
+        for (int i = 1; i <= NUM_PLAYERS; i++) {
             String name = "Player" + i;
-            int startX = rand.nextInt(WIDTH);
-            int startY = rand.nextInt(HEIGHT);
-            int goalX = rand.nextInt(WIDTH);
-            int goalY = rand.nextInt(HEIGHT);
 
-            while (startX == goalX && startY == goalY) {
+            int startX, startY, goalX, goalY;
+            String startPos;
+
+            // Ensure start position is unique
+            do {
+                startX = rand.nextInt(WIDTH);
+                startY = rand.nextInt(HEIGHT);
+                startPos = startX + "," + startY;
+            } while (usedPositions.contains(startPos));
+
+            usedPositions.add(startPos);
+
+            do {
                 goalX = rand.nextInt(WIDTH);
                 goalY = rand.nextInt(HEIGHT);
-            }
+            } while (goalX == startX && goalY == startY);
 
             // Assign 5 random tokens
             List<String> tokens = new ArrayList<>();
@@ -76,9 +87,11 @@ public class MainAgent extends Agent {
         }
     }
 
+
     private class GameBehaviour extends Behaviour {
 
         private boolean gameOver = false;
+        private int currentPlayerIndex = 1; // start with Player1
 
         @Override
         public void action() {
@@ -86,16 +99,32 @@ public class MainAgent extends Agent {
 
             turnCount++;
 
-            // Alternate turns: Player1 -> Player2
-            String currentPlayer = (turnCount % 2 == 1) ? "Player1" : "Player2";
-            System.out.println("Turn " + turnCount + ": Asking " + currentPlayer + " to play.");
+            String currentPlayer = "Player" + currentPlayerIndex;
+            System.out.println(String.format("=== Turn %d: %s's move ===", turnCount, currentPlayer));
+
+
+
+            PlayerData pdata = players.get(currentPlayer);
+            // Calculate next position towards goal
+            int nextX = pdata.x, nextY = pdata.y;
+            if (pdata.x < pdata.goalX) nextX++;
+            else if (pdata.x > pdata.goalX) nextX--;
+            else if (pdata.y < pdata.goalY) nextY++;
+            else if (pdata.y > pdata.goalY) nextY--;
+
+            // Get color of next cell from grid
+            String nextColor = grid[nextY][nextX].getColor();
 
             ACLMessage turnMsg = new ACLMessage(ACLMessage.REQUEST);
             turnMsg.addReceiver(new AID(currentPlayer, AID.ISLOCALNAME));
             turnMsg.setConversationId("your-turn");
+
+            // Send required color as content
+            turnMsg.setContent(nextColor);
             send(turnMsg);
 
-            // Wait for response
+
+
             ACLMessage reply = blockingReceive();
 
             if (reply != null && reply.getConversationId().equals("turn-result")) {
@@ -104,21 +133,29 @@ public class MainAgent extends Agent {
                 int x = Integer.parseInt(data[0]);
                 int y = Integer.parseInt(data[1]);
                 List<String> updatedTokens = Arrays.asList(data[2].split(","));
-                String status = data.length > 3 ? data[3] : "OK";  // default "OK" if missing
+                boolean wasBlocked = data.length > 3 && data[3].equalsIgnoreCase("BLOCKED");
 
-                PlayerData pdata = players.get(currentPlayer);
+                pdata = players.get(currentPlayer);
                 pdata.setX(x);
                 pdata.setY(y);
                 pdata.setTokens(new ArrayList<>(updatedTokens));
+
+                if (wasBlocked) {
+                    pdata.incrementBlockCount();
+                    System.out.println(String.format("[Blocked] %s is blocked %d time(s) consecutively.", currentPlayer, pdata.getBlockCount()));
+                }
+
                 gui.updatePlayerPosition(pdata.name, pdata.x, pdata.y, pdata.goalX, pdata.goalY);
 
                 if (pdata.isAtGoal()) {
-                    System.out.println(currentPlayer + " has reached the goal! Game Over.");
+                    System.out.println("🏁 " + getLocalName() + ": Reached the goal at (" + x + "," + y + ")! Victory is mine! 🎉");
                     gameOver = true;
                 }
 
-                if ("BLOCKED".equals(status)) {
-                    System.out.println(currentPlayer + " is blocked 3 times. Game over for " + currentPlayer);
+                boolean allBlocked = players.values().stream()
+                    .allMatch(p -> p.getBlockCount() >= 3);
+                if (allBlocked) {
+                    System.out.println(">>> All players are blocked for 3 turns in a row. Game Over.");
                     gameOver = true;
                 }
 
@@ -129,7 +166,11 @@ public class MainAgent extends Agent {
                 }
             }
 
-                // TODO: Add scoring logic, block counter, token trading, etc.
+            // Move to next player, looping back to 1
+            currentPlayerIndex++;
+            if (currentPlayerIndex > NUM_PLAYERS) {
+                currentPlayerIndex = 1;
+            }
         }
 
         @Override
@@ -144,6 +185,7 @@ public class MainAgent extends Agent {
         private final int goalX, goalY;
         private int x, y;
         private List<String> tokens;
+        private int blockCount = 0; // Track how many times this player was blocked
 
         public PlayerData(String name, int startX, int startY, int goalX, int goalY, List<String> tokens) {
             this.name = name;
@@ -158,14 +200,21 @@ public class MainAgent extends Agent {
             return x == goalX && y == goalY;
         }
 
+        public void incrementBlockCount() {
+            blockCount++;
+        }
+
+        public int getBlockCount() {
+            return blockCount;
+        }
+
         public void setX(int x) { this.x = x; }
-
         public void setY(int y) { this.y = y; }
-
         public void setTokens(List<String> tokens) { this.tokens = tokens; }
 
         public String toMessage() {
             return x + "," + y + ";" + goalX + "," + goalY + ";" + String.join(",", tokens);
         }
     }
+
 }

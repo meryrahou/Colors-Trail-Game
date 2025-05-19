@@ -31,11 +31,11 @@ This is a grid-based multi-agent game built using the **JADE** (Java Agent DEvel
 
 **macOS/Linux**
 ```bash
-javac -cp ".:/path/to/jade/lib/jade.jar" agents/*.java
+javac -cp ".:/Users/mery/Downloads/JADE-all-4.6.0/jade/lib/jade.jar" src/*.java && java -cp ".:/Users/mery/Downloads/JADE-all-4.6.0/jade/lib/jade.jar:src" StartJADE
 ```
 **Windows (PowerShell)**
-```
-javac -cp ".;C:\path\to\jade\lib\jade.jar" agents\*.java
+``` bash
+javac -cp ".;C:\path\to\jade\lib\jade.jar" src\*.java && java -cp ".;C:\path\to\jade\lib\jade.jar;src" StartJADE    
 ```
 
 Replace /path/to/jade/ with your actual JADE path.
