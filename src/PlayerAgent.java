@@ -95,8 +95,8 @@ public class PlayerAgent extends Agent {
                 System.out.println(getLocalName() + " blocked (" + blockedTurns + " turns in a row). Missing '" + requiredColor + "'.");
                 System.out.println(getLocalName() + " proposes trade: Needs '" + requiredColor + "', offers '" + (tokens.isEmpty() ? "NONE" : tokens.get(0)) + "' to " + other + ".");
 
-                if (blockedTurns >= 3) {
-                    System.out.println(getLocalName() + " blocked 3 times. Ending game.");
+                if (blockedTurns >= GameConfig.MAX_BLOCKED_TURNS) {
+                    System.out.println(getLocalName() + " blocked "+ GameConfig.MAX_BLOCKED_TURNS +" times. Ending game.");
                     sendResult(false);
                     return;
                 }

@@ -7,25 +7,18 @@ import java.util.ArrayList;
 
 public class GameGUI extends JFrame {
 
+    private static final int CELL_SIZE = GameConfig.CELL_SIZE;
+
     private final Map<String, Point> playerGoals = new HashMap<>();
     private final Map<String, Point> playerPositions = new HashMap<>();
     private final Map<String, List<Point>> playerTrails = new HashMap<>();
-
-    private static final int CELL_SIZE = 100;
-    private static final Map<String, Color> COLOR_MAP = new HashMap<>();
-
-    static {
-        COLOR_MAP.put("Red", new Color(255, 105, 97));    // bright pastel red (coral)
-        COLOR_MAP.put("Blue", new Color(100, 149, 237));  // cornflower blue
-        COLOR_MAP.put("Green", new Color(144, 238, 144)); // light green (lime-ish)
-        COLOR_MAP.put("Yellow", new Color(255, 255, 153)); // soft sunny yellow
-    }
 
     private JPanel[][] cells;
 
     public GameGUI(Case[][] grid) {
         setTitle("Colored Trails Game");
         setSize(CELL_SIZE * grid[0].length + 50, CELL_SIZE * grid.length + 50);
+        // setLocationRelativeTo(null); // Center on screen
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new GridLayout(grid.length, grid[0].length));
 
@@ -34,7 +27,7 @@ public class GameGUI extends JFrame {
         for (int y = 0; y < grid.length; y++) {
             for (int x = 0; x < grid[0].length; x++) {
                 JPanel panel = new JPanel();
-                panel.setBackground(COLOR_MAP.getOrDefault(grid[y][x].getColor(), Color.LIGHT_GRAY));
+                panel.setBackground(GameConfig.COLOR_MAP.getOrDefault(grid[y][x].getColor(), Color.LIGHT_GRAY));
                 panel.setBorder(BorderFactory.createLineBorder(Color.black));
                 panel.setLayout(new OverlayLayout(panel));
                 add(panel);
@@ -45,8 +38,6 @@ public class GameGUI extends JFrame {
         setVisible(true);
     }
        
-    
-
     public void updatePlayerPosition(String playerName, int x, int y, int goalX, int goalY) {
         SwingUtilities.invokeLater(() -> {
             resetOverlay();
@@ -71,14 +62,7 @@ public class GameGUI extends JFrame {
                 goalCell.setBorder(BorderFactory.createLineBorder(Color.black, 3));
                 goalCell.setLayout(null); // Absolute layout
 
-                // Goal emoji (left-center)
-                String flag = switch (player) {
-                    case "Player1" -> "🍯";
-                    case "Player2" -> "🧀";
-                    case "Player3" -> "🌸";
-                    case "Player4" -> "🍌";
-                    default -> "🏁";
-                };
+                String flag = GameConfig.getFlag(player);
                 JLabel flagLabel = new JLabel(flag);
                 flagLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 24));
                 flagLabel.setBounds(CELL_SIZE / 4 - 6, CELL_SIZE / 2 - 16, 32, 32);
@@ -96,7 +80,7 @@ public class GameGUI extends JFrame {
 
             // --- Draw trail dots ---
             for (Map.Entry<String, List<Point>> trailEntry : playerTrails.entrySet()) {
-                Color trailColor = getTrailColor(trailEntry.getKey());
+                Color trailColor = GameConfig.getTrailColor(trailEntry.getKey());
                 for (Point pt : trailEntry.getValue()) {
                     JPanel cell = cells[pt.y][pt.x];
                     JLabel dotLabel = new JLabel("•");
@@ -116,14 +100,7 @@ public class GameGUI extends JFrame {
                 JPanel playerCell = cells[pos.y][pos.x];
                 playerCell.setLayout(null); // Absolute layout
 
-                // Player emoji (center-right)
-                String emoji = switch (player) {
-                    case "Player1" -> "🐻";
-                    case "Player2" -> "🐭";
-                    case "Player3" -> "🐝";
-                    case "Player4" -> "🐵";
-                    default -> "❓";
-                };
+                String emoji = GameConfig.getPlayerEmoji(player);
                 JLabel playerLabel = new JLabel(emoji);
                 playerLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 28));
                 playerLabel.setBounds((CELL_SIZE * 3 / 4) - 16, CELL_SIZE / 2 - 16, 32, 32);  // Approach center from right
@@ -142,9 +119,6 @@ public class GameGUI extends JFrame {
         });
     }
 
-
-
-
     private void resetOverlay() {
         for (JPanel[] row : cells) {
             for (JPanel panel : row) {
@@ -153,21 +127,6 @@ public class GameGUI extends JFrame {
                 panel.setLayout(new OverlayLayout(panel));
 
             }
-        }
-    }
-
-    private Color getTrailColor(String playerName) {
-        switch (playerName) {
-            case "Player1":
-                return new Color(0, 0, 0, 180);        // Semi-transparent black
-            case "Player2":
-                return new Color(255, 255, 255, 180);  // Semi-transparent white
-            case "Player3":
-                return new Color(255, 0, 0, 180);      // Semi-transparent red
-            case "Player4":
-                return new Color(0, 0, 255, 180);      // Semi-transparent blue
-            default:
-                return Color.GRAY;
         }
     }
 

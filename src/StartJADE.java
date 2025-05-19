@@ -24,11 +24,10 @@ public class StartJADE {
             mainAgent.start();
 
             // Launch player agents
-            AgentController player1 = mainContainer.createNewAgent("Player1", "PlayerAgent", new Object[]{"1"});
-            AgentController player2 = mainContainer.createNewAgent("Player2", "PlayerAgent", new Object[]{"2"});
-
-            player1.start();
-            player2.start();
+            for (int i = 1; i <= GameConfig.NUM_PLAYERS; i++) {
+                AgentController player = mainContainer.createNewAgent("Player" + i, "PlayerAgent", new Object[]{String.valueOf(i)});
+                player.start();
+            }
 
         } catch (StaleProxyException e) {
             e.printStackTrace();

@@ -4,17 +4,19 @@ import jade.lang.acl.ACLMessage;
 import jade.core.behaviours.Behaviour;
 
 import java.util.*;
+import java.util.List;
 
+import javax.swing.*;
+import java.awt.*;
 public class MainAgent extends Agent {
-
 
     private GameGUI gui; // GUI for visualizing the grid and players
 
-    public static final int WIDTH = 7;
-    public static final int HEIGHT = 5;
-    public static final String[] COLORS = {"Red", "Blue", "Green", "Yellow"};
+    public static final int WIDTH = GameConfig.GRID_WIDTH;
+    public static final int HEIGHT = GameConfig.GRID_HEIGHT;
+    public static final String[] COLORS = GameConfig.COLOR_MAP.keySet().toArray(new String[0]);
 
-    private static final int NUM_PLAYERS = 2;  // change this number as needed
+    private static final int NUM_PLAYERS = GameConfig.NUM_PLAYERS;
 
 
     private Case[][] grid = new Case[HEIGHT][WIDTH];
@@ -70,7 +72,7 @@ public class MainAgent extends Agent {
 
             // Assign 5 random tokens
             List<String> tokens = new ArrayList<>();
-            for (int t = 0; t < 5; t++) {
+            for (int t = 0; t < GameConfig.TOKENS_PER_PLAYER; t++) {
                 tokens.add(COLORS[rand.nextInt(COLORS.length)]);
             }
 
@@ -101,7 +103,7 @@ public class MainAgent extends Agent {
 
             String currentPlayer = "Player" + currentPlayerIndex;
             System.out.println(String.format("=== Turn %d: %s's move ===", turnCount, currentPlayer));
-
+            
 
 
             PlayerData pdata = players.get(currentPlayer);
@@ -132,10 +134,9 @@ public class MainAgent extends Agent {
 
                 int x = Integer.parseInt(data[0]);
                 int y = Integer.parseInt(data[1]);
-                List<String> updatedTokens = Arrays.asList(data[2].split(","));
+                List<String> updatedTokens = data[2].isEmpty() ? new ArrayList<>() : Arrays.asList(data[2].split(","));
                 boolean wasBlocked = data.length > 3 && data[3].equalsIgnoreCase("BLOCKED");
 
-                pdata = players.get(currentPlayer);
                 pdata.setX(x);
                 pdata.setY(y);
                 pdata.setTokens(new ArrayList<>(updatedTokens));
@@ -149,18 +150,43 @@ public class MainAgent extends Agent {
 
                 if (pdata.isAtGoal()) {
                     System.out.println("🏁 " + getLocalName() + ": Reached the goal at (" + x + "," + y + ")! Victory is mine! 🎉");
+
+                    // Create a prettier centered label
+                    JLabel label = new JLabel(pdata.name + " has reached the goal! 🎯 🎉", SwingConstants.CENTER);
+                    label.setFont(new Font("Segoe UI", Font.BOLD, 18));
+                    label.setForeground(new Color(34, 139, 34)); // Forest green
+
+                    JOptionPane.showMessageDialog(
+                        null,
+                        label,
+                        "🎉 Game Ended",
+                        JOptionPane.PLAIN_MESSAGE
+                    );
+
                     gameOver = true;
                 }
 
                 boolean allBlocked = players.values().stream()
-                    .allMatch(p -> p.getBlockCount() >= 3);
-                if (allBlocked) {
-                    System.out.println(">>> All players are blocked for 3 turns in a row. Game Over.");
-                    gameOver = true;
-                }
+                    .allMatch(p -> p.getBlockCount() >= GameConfig.MAX_BLOCKED_TURNS);
+                    if (allBlocked) {
+                        System.out.println(">>> All players are blocked for"+ GameConfig.MAX_GAME_TURNS + " turns in a row. Game Over.");
+
+                        JLabel blockedLabel = new JLabel("All players are blocked for "+ GameConfig.MAX_GAME_TURNS + " turns.\nIt's a draw.", SwingConstants.CENTER);
+                        blockedLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+                        blockedLabel.setForeground(Color.RED);
+
+                        JOptionPane.showMessageDialog(
+                            null,
+                            blockedLabel,
+                            "Game Over - Draw",
+                            JOptionPane.WARNING_MESSAGE
+                        );
+
+                        gameOver = true;
+                    }
 
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(GameConfig.TURN_DELAY_MS);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
