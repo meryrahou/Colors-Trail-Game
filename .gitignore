@@ -1,0 +1,22 @@
+```gitignore
+# Java
+*.class
+*.jar
+*.log
+*.tmp
+
+jade/
+
+# IntelliJ
+.idea/
+*.iml
+out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# OS-specific
+.DS_Store
+Thumbs.db
