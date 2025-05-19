@@ -12,12 +12,11 @@ public class PlayerAgent extends Agent {
     private int goalX, goalY;
     private int blockedTurns = 0;
     private List<String> tokens = new ArrayList<>();
+    private Map<String, Integer> betrayalCount = new HashMap<>(); // ✅ TRACKS betrayals per agent
 
     @Override
     protected void setup() {
         System.out.println(getLocalName() + ": Starting...");
-
-        // Add message listener
         addBehaviour(new MessageHandler());
     }
 
@@ -47,7 +46,6 @@ public class PlayerAgent extends Agent {
         }
 
         private void handleInit(String content) {
-            // Format: x,y;goalX,goalY;token1,token2,...
             String[] parts = content.split(";");
             String[] startCoords = parts[0].split(",");
             String[] goalCoords = parts[1].split(",");
@@ -57,21 +55,17 @@ public class PlayerAgent extends Agent {
             y = Integer.parseInt(startCoords[1]);
             goalX = Integer.parseInt(goalCoords[0]);
             goalY = Integer.parseInt(goalCoords[1]);
-
             tokens = new ArrayList<>(Arrays.asList(tokenArray));
 
             System.out.println(getLocalName() + " initialized at (" + x + "," + y + "), goal: (" + goalX + "," + goalY + ")");
             System.out.println(getLocalName() + " has tokens: " + tokens);
         }
-                        
-        private void handleTurn(ACLMessage msg) {
-            // Color required to move, sent by MainAgent
-            String requiredColor = msg.getContent();
 
+        private void handleTurn(ACLMessage msg) {
+            String requiredColor = msg.getContent();
             System.out.println(getLocalName() + ": My turn. Needs '" + requiredColor + "'.");
 
             int nextX = x, nextY = y;
-
             if (x < goalX) nextX++;
             else if (x > goalX) nextX--;
             else if (y < goalY) nextY++;
@@ -88,22 +82,21 @@ public class PlayerAgent extends Agent {
             } else {
                 blockedTurns++;
 
-                List<String> otherPlayers = new ArrayList<>(Arrays.asList("Player1", "Player2", "Player3", "Player4")); // Update if NUM_PLAYERS changes
+                List<String> otherPlayers = new ArrayList<>(Arrays.asList("Player1", "Player2", "Player3", "Player4"));
                 otherPlayers.remove(getLocalName());
                 String other = otherPlayers.get(new Random().nextInt(otherPlayers.size()));
 
-                System.out.println(getLocalName() + " blocked (" + blockedTurns + " turns in a row). Missing '" + requiredColor + "'.");
-                System.out.println(getLocalName() + " proposes trade: Needs '" + requiredColor + "', offers '" + (tokens.isEmpty() ? "NONE" : tokens.get(0)) + "' to " + other + ".");
+                System.out.println(getLocalName() + " blocked (" + blockedTurns + "). Needs '" + requiredColor + "'.");
+                System.out.println(getLocalName() + " proposes trade to " + other);
 
                 if (blockedTurns >= GameConfig.MAX_BLOCKED_TURNS) {
-                    System.out.println(getLocalName() + " blocked "+ GameConfig.MAX_BLOCKED_TURNS +" times. Ending game.");
+                    System.out.println(getLocalName() + " blocked " + GameConfig.MAX_BLOCKED_TURNS + " times. Ending game.");
                     sendResult(false);
                     return;
                 }
 
-                // Try to negotiate
                 String needed = requiredColor;
-                String offer = tokens.isEmpty() ? "NONE" : tokens.get(0); // pick something to offer
+                String offer = tokens.isEmpty() ? "NONE" : tokens.get(0);
 
                 ACLMessage propose = new ACLMessage(ACLMessage.PROPOSE);
                 propose.addReceiver(new AID(other, AID.ISLOCALNAME));
@@ -111,21 +104,19 @@ public class PlayerAgent extends Agent {
                 propose.setContent("Need:" + needed + ";Offer:" + offer);
                 send(propose);
 
-                // Wait for response
                 ACLMessage response = blockingReceive();
                 if (response != null && response.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {
-                    System.out.println(getLocalName() + " received accepted proposal. Proceeding with transfer...");
+                    System.out.println(getLocalName() + " received accepted proposal.");
 
-                    // Simulate betrayal 50% of time
                     boolean honest = new Random().nextBoolean();
                     if (honest && !offer.equals("NONE")) {
                         tokens.remove(offer);
                         System.out.println(getLocalName() + " sent token: '" + offer + "'");
                     } else {
                         System.out.println(getLocalName() + " betrayed and sent nothing!");
+                        betrayalCount.put(other, betrayalCount.getOrDefault(other, 0) + 1);
                     }
 
-                    // Receive token
                     String tokenGiven = response.getContent();
                     if (!tokenGiven.equals("NONE")) {
                         tokens.add(tokenGiven);
@@ -137,30 +128,15 @@ public class PlayerAgent extends Agent {
             }
 
             sendResult(true);
-        }
-
-
-        private String guessColor(int x, int y) {
-            // Placeholder logic for demo
-            String[] colors = {"Red", "Blue", "Green", "Yellow"};
-            return colors[new Random().nextInt(colors.length)];
-        }
-
-        private void sendResult(boolean stillPlaying) {
-            ACLMessage result = new ACLMessage(ACLMessage.INFORM);
-            result.addReceiver(new AID("MainAgent", AID.ISLOCALNAME));
-            result.setConversationId("turn-result");
-            result.setContent(x + ";" + y + ";" + String.join(",", tokens) + ";" + (stillPlaying ? "OK" : "BLOCKED"));
-            send(result);
+            System.out.println(getLocalName() + " now holds: " + tokens);
         }
 
         private void handleProposal(ACLMessage msg) {
-            String content = msg.getContent(); // Need:Blue;Offer:Green
+            String content = msg.getContent(); // e.g. "Need:Blue;Offer:Green"
             String[] parts = content.split(";");
             String need = parts[0].split(":")[1];
             String offer = parts[1].split(":")[1];
 
-            // Accept only if we have what they need
             boolean accept = tokens.contains(need);
 
             ACLMessage reply = msg.createReply();
@@ -174,7 +150,22 @@ public class PlayerAgent extends Agent {
                 reply.setContent("NONE");
                 System.out.println(getLocalName() + " rejected proposal.");
             }
+
             send(reply);
+        }
+
+        private void sendResult(boolean stillPlaying) {
+            ACLMessage result = new ACLMessage(ACLMessage.INFORM);
+            result.addReceiver(new AID("MainAgent", AID.ISLOCALNAME));
+            result.setConversationId("turn-result");
+            result.setContent(x + ";" + y + ";" + String.join(",", tokens) + ";" + (stillPlaying ? "OK" : "BLOCKED"));
+            send(result);
         }
     }
 }
+
+
+
+
+
+

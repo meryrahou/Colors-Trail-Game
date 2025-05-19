@@ -169,9 +169,9 @@ public class MainAgent extends Agent {
                 boolean allBlocked = players.values().stream()
                     .allMatch(p -> p.getBlockCount() >= GameConfig.MAX_BLOCKED_TURNS);
                     if (allBlocked) {
-                        System.out.println(">>> All players are blocked for"+ GameConfig.MAX_GAME_TURNS + " turns in a row. Game Over.");
+                        System.out.println(">>> All players are blocked for "+ GameConfig.MAX_BLOCKED_TURNS + " turns in a row. Game Over.");
 
-                        JLabel blockedLabel = new JLabel("All players are blocked for "+ GameConfig.MAX_GAME_TURNS + " turns.\nIt's a draw.", SwingConstants.CENTER);
+                        JLabel blockedLabel = new JLabel("All players are blocked for "+ GameConfig.MAX_BLOCKED_TURNS + " turns.\nIt's a draw.", SwingConstants.CENTER);
                         blockedLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
                         blockedLabel.setForeground(Color.RED);
 
