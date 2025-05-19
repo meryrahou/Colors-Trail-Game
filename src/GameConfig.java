@@ -28,7 +28,7 @@ public class GameConfig {
     // Tokens available in the game (4 tokens, one per player max)
     public static final String[] AVAILABLE_TOKENS = {"Red", "Blue", "Green", "Yellow"};
     // Number of tokens each player starts with
-    public static final int TOKENS_PER_PLAYER = 5;
+    public static final int TOKENS_PER_PLAYER = 7;
     
     // Probability that a player will betray in a token trade (0.0 to 1.0)
     public static final double BETRAYAL_PROBABILITY = 0.9;
