@@ -23,7 +23,7 @@ public class GameConfig {
     }
 
     // Delay (milliseconds) between agent turns for visualization
-    public static final int TURN_DELAY_MS = 500;
+    public static final int TURN_DELAY_MS = 2000;
     
     // Tokens available in the game (4 tokens, one per player max)
     public static final String[] AVAILABLE_TOKENS = {"Red", "Blue", "Green", "Yellow"};
