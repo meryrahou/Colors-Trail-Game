@@ -1,6 +1,6 @@
 # 🧠 JADE Grid Game — Multi-Agent Trail Race
 
-This is a grid-based multi-agent game built using the **JADE** (Java Agent DEvelopment Framework). Players (agents) race toward a goal by moving step by step — but each move requires a specific colored token. If an agent lacks the right token, it can **negotiate trades** with others... or **betray** them 😈.
+This is a grid-based multi-agent game built using the **JADE** (Java Agent DEvelopment Framework). Players (agents) race toward a goal by moving step by step — but each move requires a specific colored token. If an agent lacks the right token, it can **negotiate trades** with others... or **betray** them.
 
 ## 🎮 How It Works
 

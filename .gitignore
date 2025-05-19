@@ -20,3 +20,6 @@ out/
 # OS-specific
 .DS_Store
 Thumbs.db
+
+# Notes
+*.txt
