@@ -31,7 +31,7 @@ This is a grid-based multi-agent game built using the **JADE** (Java Agent DEvel
 
 **macOS/Linux**
 ```bash
-javac -cp ".:/Users/mery/Downloads/JADE-all-4.6.0/jade/lib/jade.jar" src/*.java && java -cp ".:/Users/mery/Downloads/JADE-all-4.6.0/jade/lib/jade.jar:src" StartJADE
+javac -cp ".:/path/tojade/lib/jade.jar" src/*.java && java -cp ".:/Users/mery/Downloads/JADE-all-4.6.0/jade/lib/jade.jar:src" StartJADE
 ```
 **Windows (PowerShell)**
 ``` bash
@@ -49,6 +49,5 @@ java -cp ".:/path/to/jade/lib/jade.jar" agents.StartJADE
 
 - Smarter negotiation logic
 - Fair trading incentives (avoid betrayals?)
-- AI behavior customization
+- RL behavior customization
 - GUI scoreboard and history log
-- Networked remote agent support
